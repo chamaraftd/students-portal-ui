@@ -3,7 +3,10 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,  
+  studentMicroservice:'http://localhost:3000/graphql',
+  fileuploadMicroservice:'http://localhost:3002/api/files/upload',
+  websocketUri:'http://localhost:3006'
 };
 
 /*

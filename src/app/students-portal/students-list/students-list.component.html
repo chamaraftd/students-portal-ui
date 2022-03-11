@@ -1,0 +1,16 @@
+<div class="my-4">
+  <kendo-upload
+    [restrictions]="allowedExtension"
+    [saveUrl]="uploadSaveUrl"
+    [multiple]="false"
+    [autoUpload]="false"
+    [withCredentials]="false"
+  >
+  </kendo-upload>
+</div>
+<app-data-grid
+  [dataSource]="paginatedStudents"
+  (onRemove)="removeStudent($event)"
+  (onUpdate)="updateStudent($event)"
+  (onPageChange)="pageChange($event)"
+></app-data-grid>
