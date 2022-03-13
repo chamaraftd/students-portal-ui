@@ -1,14 +1,26 @@
 import { Component, OnInit } from '@angular/core';
 import { NotificationService } from '@progress/kendo-angular-notification';
-import { FileInfo, FileRestrictions, SuccessEvent } from '@progress/kendo-angular-upload';
+import {
+  FileInfo,
+  FileRestrictions,
+  SuccessEvent,
+} from '@progress/kendo-angular-upload';
 import { Subscription } from 'rxjs/internal/Subscription';
-import { PaginatedData, PaginationOption, Student } from 'src/app/modals/students.modal';
+import {
+  PaginatedData,
+  PaginationOption,
+  Student,
+} from 'src/app/modals/students.modal';
 import { environment } from 'src/environments/environment';
 import { Messages } from 'src/app/modals/enums/messages.enum';
 import { StudentsCrudService } from '../services/students-crud.service';
 import { WebsocketService } from '../services/websocket.service';
 import { QueryRef } from 'apollo-angular';
-import { DialogCloseResult, DialogRef, DialogService } from '@progress/kendo-angular-dialog';
+import {
+  DialogCloseResult,
+  DialogRef,
+  DialogService,
+} from '@progress/kendo-angular-dialog';
 
 @Component({
   selector: 'app-students-list',
@@ -20,8 +32,8 @@ export class StudentsListComponent implements OnInit {
   private updateSubscription: Subscription;
   private deleteSubscription: Subscription;
   public userFile: Array<FileInfo>;
-  public limit:number = 10;
-  public page:number = 1;
+  public limit: number = 10;
+  public page: number = 1;
   public allowedExtension: FileRestrictions = {
     allowedExtensions: ['xlsx'],
   };
@@ -42,42 +54,50 @@ export class StudentsListComponent implements OnInit {
   }
 
   studentSubscription() {
-    this.studentQueryRef =  this.studentService
-    .getAllStudents()
+    this.studentQueryRef = this.studentService.getAllStudents();
     this.initSubscription.add(
-      this.studentQueryRef
-        .valueChanges.subscribe((response) => {
-          this.paginatedStudents = {...response.data.paginateStudents}
-        })
+      this.studentQueryRef.valueChanges.subscribe((response) => {
+        this.paginatedStudents = { ...response.data.paginateStudents };
+      })
     );
   }
 
   webSocketSubscription() {
     this.initSubscription.add(
       this.webSocketNotifier.getNotified().subscribe((notification: string) => {
-        if (notification.toLowerCase() === 'success'){
-          this.studentQueryRef.refetch({option:{limit:10,page:1}});
+        if (notification.toLowerCase() === 'success') {
+          this.studentQueryRef.refetch({ option: { limit: 10, page: 1 } });
           this.showSuccess(Messages.FILE_PROCESSING_SUCCESS);
-        }
-        else if (notification.toLowerCase() === 'failed')
+        } else if (notification.toLowerCase() === 'failed')
           this.showError(Messages.FILE_PROCESSING_FAILED);
       })
     );
   }
 
-  pageChange(paginateOptions:PaginationOption){
+  pageChange(paginateOptions: PaginationOption) {
     this.limit = paginateOptions.limit;
-    this.page = paginateOptions.page
-    this.studentQueryRef.refetch({option:paginateOptions})
+    this.page = paginateOptions.page;
+    this.studentQueryRef.refetch({ option: paginateOptions });
   }
 
   updateStudent(student: Student) {
     student.dob = new Date(student.dob).toISOString().split('T')[0];
     this.updateSubscription = this.studentService
-      .updateStudent(student,{limit:this.limit,page:this.page})
+      .updateStudent(student, { limit: this.limit, page: this.page })
       .subscribe(
         (response) => {
-          if (response.data) this.showSuccess(Messages.UPDATE_SUCCESS_MESSAGE);
+          
+          if (response.data?.updateStudent) {
+            const index = this.paginatedStudents.items.findIndex(
+              (ele) => ele.id === response.data?.updateStudent.id
+            );
+            if(index){
+              const shallowCopy:Student[] = [... this.paginatedStudents.items];
+              shallowCopy[index] = response.data?.updateStudent;
+              this.paginatedStudents = {...this.paginatedStudents,items:shallowCopy};
+              this.showSuccess(Messages.UPDATE_SUCCESS_MESSAGE);
+            }
+          }
         },
         (error) => {
           this.showError(Messages.UPDATE_ERROR_MESSAGE);
@@ -100,22 +120,26 @@ export class StudentsListComponent implements OnInit {
       if (result instanceof DialogCloseResult) {
       } else {
         if (result.text.toLocaleLowerCase() === 'yes') {
-          this.removeStudentSubscription(id)
+          this.removeStudentSubscription(id);
         }
       }
     });
   }
 
-  removeStudentSubscription(id:number){
-    this.deleteSubscription = this.studentService.deleteStudent(id,{limit:this.limit,page:this.page}).subscribe(
-      (response) => {
-        if (response.data?.removeStudent) this.showSuccess(Messages.DELETE_SUCCESS_MESSAGE);
-        else this.showError(Messages.DELETE_ERRORS_MESSAGE);
-      },
-      (error) => {
-        throw new Error(`User Delete Failed : ${error}`);
-      }
-    );
+  removeStudentSubscription(id: number) {
+    this.deleteSubscription = this.studentService
+      .deleteStudent(id, { limit: this.limit, page: this.page })
+      .subscribe(
+        (response) => {
+          if (response.data?.removeStudent){
+            this.showSuccess(Messages.DELETE_SUCCESS_MESSAGE);
+          }
+          else this.showError(Messages.DELETE_ERRORS_MESSAGE);
+        },
+        (error) => {
+          throw new Error(`User Delete Failed : ${error}`);
+        }
+      );
   }
 
   public showSuccess(message: string): void {
@@ -137,26 +161,6 @@ export class StudentsListComponent implements OnInit {
       type: { style: 'error', icon: true },
     });
   }
-
-  // public showConfirmation(id?: number) {
-  //   const dialog: DialogRef = this.dialogService.open({
-  //     title: 'Please confirm',
-  //     content: 'Are you sure?',
-  //     actions: [{ text: 'No' }, { text: 'Yes', themeColor: 'primary' }],
-  //     width: 450,
-  //     height: 200,
-  //     minWidth: 250,
-  //   });
-
-  //   dialog.result.subscribe((result) => {
-  //     if (result instanceof DialogCloseResult) {
-  //     } else {
-  //       if (result.text.toLocaleLowerCase() === 'yes') {
-  //         //this.removeStudent(id)
-  //       }
-  //     }
-  //   });
-  // }
 
   ngOnDestroy(): void {
     this.initSubscription && this.initSubscription.unsubscribe();

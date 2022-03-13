@@ -32,40 +32,35 @@ export class StudentsCrudService {
     });
   }
 
-  // getStudent(id: number) {
-  //   return this.apollo
-  //     .watchQuery({
-  //       query: GET_STUDENTS,
-  //       variables: {
-  //         id,
-  //       },
-  //     })
-  //     .valueChanges.pipe(take(1));
-  // }
+  getStudent(id: number) {
+    return this.apollo
+      .watchQuery({
+        query: GET_STUDENTS,
+        variables: {
+          id,
+        },
+      })
+      .valueChanges.pipe(take(1));
+  }
 
-  // createStudent(student: Student) {
-  //   return this.apollo.mutate({
-  //     mutation: CREATE_STUDENT,
-  //     variables: {
-  //       createStudentInput: student,
-  //     },
-  //   });
-  // }
-
-  updateStudent(student: Partial<Student>,option:PaginationOption = {limit:10,page:1}) {
+  createStudent(student: Student) {
     return this.apollo.mutate({
+      mutation: CREATE_STUDENT,
+      variables: {
+        createStudentInput: student,
+      },
+    });
+  }
+
+  updateStudent(
+    student: Partial<Student>,
+    option: PaginationOption = { limit: 10, page: 1 }
+  ) {
+    return this.apollo.mutate<{ updateStudent: Student }>({
       mutation: UPDATE_STUDENT,
       variables: {
         updateStudentInput: student,
       },
-      refetchQueries: [
-        {
-          query: GET_STUDENTS,
-          variables: {
-            option
-          },
-        },
-      ],
     });
   }
 
