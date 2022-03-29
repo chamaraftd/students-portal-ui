@@ -131,6 +131,7 @@ export class StudentsListComponent implements OnInit {
       .deleteStudent(id, { limit: this.limit, page: this.page })
       .subscribe(
         (response) => {
+          console.log(response.data?.removeStudent)
           if (response.data?.removeStudent){
             this.showSuccess(Messages.DELETE_SUCCESS_MESSAGE);
           }

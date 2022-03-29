@@ -2,7 +2,7 @@
 <form
   class="row g-3"
   [formGroup]="studentsForm"
-  (ngSubmit)="doSomething(studentsForm)"
+  (ngSubmit)="submitRecords(studentsForm)"
 >
   <div class="col-md-5">
     <label for="inputEmail4" class="form-label">Name</label>
@@ -31,10 +31,10 @@
   </div>
 
   <div class="col-12">
-    <button type="submit" [disabled]="" class="btn btn-primary">
-      Create
+    <button type="submit"  [disabled]="!studentsForm.valid" class="btn btn-primary">
+      {{editIndex != null ? 'Edit' : 'Create'}}
     </button>
-    <button type="reset" class="mx-2 btn btn-secondary">
+    <button (click)='resetForm()' class="mx-2 btn btn-secondary">
       Cancel
     </button>
   </div>
@@ -51,83 +51,19 @@
     let-dataItem="dataItem"
     let-index="index"
   >
-    <div>
-      <dl class="d-flex justify-content-between mt-3 px-4">
-        <dd>{{ dataItem.name }}</dd>
-        <dd>{{ dataItem.email }}</dd>
-        <dd>{{ dataItem.dob }}</dd>
-        <dd>{{ dataItem.domain }}</dd>
-        <div class="edit-buttons">
-          <button class="mx-2" kendoListViewEditCommand><kendo-svg-icon [icon]="icons.editIcon"></kendo-svg-icon></button>
+    <hr class="mx-3" [hidden]="index === 0">
+    <div class="d-flex justify-content-between">
+      <div class="my-2 mx-3">
+        <p class="h5 mb-0">{{ dataItem.name }}</p>
+        <p class="h6 mb-0 text-secondary">{{ dataItem.email }}</p>
+        <p class="mb-0 text-secondary">{{ dataItem.domain}}</p>
+        <p class="mb-0 text-secondary">{{ dataItem.dob}}</p>
+      </div>
+      <div class="edit-buttons d-flex align-items-center mx-2">
+        <div>
+          <button class="mx-3" kendoListViewEditCommand><kendo-svg-icon [icon]="icons.editIcon"></kendo-svg-icon></button>
           <button kendoListViewRemoveCommand><kendo-svg-icon [icon]="icons.removeIcon"></kendo-svg-icon></button>
         </div>
-      </dl>
-    </div>
-  </ng-template>
-
-  <ng-template
-    kendoListViewEditTemplate
-    let-formGroup="formGroup"
-    let-index="index"
-  >
-    <div class="product-view k-widget">
-      <form novalidate [formGroup]="formGroup">
-        <dl>
-          <dt>Product Name</dt>
-          <dd>
-            <input
-              type="text"
-              class="k-textbox"
-              formControlName="ProductName"
-            />
-            <div
-              [hidden]="
-                formGroup.controls.ProductName.valid ||
-                formGroup.controls.ProductName.pristine
-              "
-              class="invalid"
-            >
-              ProductName is required
-            </div>
-          </dd>
-          <dt>Unit Price</dt>
-          <dd>
-            <input
-              type="number"
-              class="k-textbox"
-              formControlName="UnitPrice"
-            />
-          </dd>
-          <dt>Units In Stock</dt>
-          <dd>
-            <input
-              type="number"
-              class="k-textbox"
-              formControlName="UnitsInStock"
-            />
-            <div
-              [hidden]="
-                formGroup.controls.UnitsInStock.valid ||
-                formGroup.controls.UnitsInStock.pristine
-              "
-              class="invalid"
-            >
-              UnitsInStock must be between 0 and 99
-            </div>
-          </dd>
-          <dt>Discontinued</dt>
-          <dd>
-            <input
-              type="checkbox"
-              class="k-checkbox"
-              formControlName="Discontinued"
-            />
-          </dd>
-        </dl>
-      </form>
-      <div class="edit-buttons">
-        <button kendoListViewSaveCommand>Save</button>
-        <button kendoListViewCancelCommand>Cancel</button>
       </div>
     </div>
   </ng-template>
